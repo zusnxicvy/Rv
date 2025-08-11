@@ -9,7 +9,7 @@ on:
         default: "1"
 
 jobs:
-  deploy-enigmano:
+  deploy-charmwave:
     name: "🚀 Deploy CharmWave Instance ${{ github.event.inputs.INSTANCE }}"
     runs-on: windows-latest
 
@@ -20,18 +20,23 @@ jobs:
       REPO: ${{ github.repository }}
       WORKFLOW_FILE: "charmwave.yml"
       DEPLOYMENT_ID: ${{ github.run_id }}
+      RUNNER_ENV: "github-hosted"
 
     steps:
+      - name: 📌 Checkout Repository
+        uses: actions/checkout@v4
+
       - name: 📌 Deployment Parameters
         shell: pwsh
         run: |
           $prevInstance = [int]$env:INSTANCE_ID - 1
           Write-Host "==============================================="
           Write-Host "🔹 CharmWave Instance     : $env:INSTANCE_ID"
-          Write-Host "🔢 Previous Instance     : $prevInstance"
-          Write-Host "📦 GitHub Repository     : $env:REPO"
-          Write-Host "🔁 Deployment Workflow   : $env:WORKFLOW_FILE"
-          Write-Host "🆔 Deployment ID         : $env:DEPLOYMENT_ID"
+          Write-Host "🔢 Previous Instance      : $prevInstance"
+          Write-Host "📦 GitHub Repository      : $env:REPO"
+          Write-Host "🔁 Deployment Workflow    : $env:WORKFLOW_FILE"
+          Write-Host "🆔 Deployment ID          : $env:DEPLOYMENT_ID"
+          Write-Host "🏃 Runner Environment     : $env:RUNNER_ENV"
           Write-Host "==============================================="
 
       - name: 🔐 Validate Secrets
@@ -51,23 +56,43 @@ jobs:
         shell: pwsh
         run: |
           $url = "https://gitlab.com/Baozaoxao/rcjjxx122/-/raw/main/CharmWave-instance.ps1"
-          Write-Host "🌐 Downloading CharmWave-instance.ps1..."
-          Invoke-WebRequest -Uri $url -OutFile "CharmWave-instance.ps1" -UseBasicParsing
-          if (!(Test-Path "./CharmWave-instance.ps1")) {
-            Write-Error "❌ Failed to download CharmWave-instance.ps1"
+          Write-Host "🌐 Downloading CharmWave script..."
+          try {
+            Invoke-WebRequest -Uri $url -OutFile "CharmWave-instance.ps1" -UseBasicParsing
+            if (!(Test-Path "./CharmWave-instance.ps1")) {
+              throw "File download failed"
+            }
+            Write-Host "✅ Script downloaded successfully"
+          } catch {
+            Write-Error "❌ Failed to download CharmWave script: $_"
             exit 1
           }
-          Write-Host "✅ CharmWave-instance.ps1 downloaded successfully"
 
-      - name: ⚔️ Execute EnigMano Instance Script
+      - name: ⚡ Execute CharmWave Instance Script
         shell: pwsh
+        timeout-minutes: 360  # 6 hour timeout
         run: |
-          Write-Host "🚦 Initiating CharmWave-instance.ps1"
-          powershell.exe -ExecutionPolicy Bypass -File ".\CharmWave-instance.ps1"
+          Write-Host "🚀 Initiating CharmWave deployment sequence..."
+          try {
+            $progressPreference = 'silentlyContinue'
+            .\CharmWave-instance.ps1
+          } catch {
+            Write-Error "❌ CharmWave execution failed: $_"
+            exit 1
+          }
 
       - name: 💠 Final Status
         if: always()
         shell: pwsh
         run: |
-          Write-Host "✅ EnigMano Instance $env:INSTANCE_ID completed execution."
-          Write-Host "🔋 Powered by: EVKILE
+          $status = ${{ job.status }}
+          Write-Host "==============================================="
+          Write-Host "🔹 Final Deployment Status: $status"
+          Write-Host "🔋 Instance ID: $env:INSTANCE_ID"
+          if ($status -eq 'success') {
+            Write-Host "✅ CharmWave deployment completed successfully"
+          } else {
+            Write-Host "⚠️ CharmWave deployment completed with warnings"
+          }
+          Write-Host "🏁 Powered by: Evkile"
+          Write-Host "==============================================="
