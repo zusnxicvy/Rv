@@ -63,7 +63,7 @@ jobs:
         shell: pwsh
         run: |
           Write-Host "🚦 Initiating CharmWave-instance.ps1"
-          powershell.exe -ExecutionPolicy Bypass -File ".\EnigMano-instance.ps1"
+          powershell.exe -ExecutionPolicy Bypass -File ".\CharmWave-instance.ps1"
 
       - name: 💠 Final Status
         if: always()
