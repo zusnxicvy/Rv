@@ -55,11 +55,11 @@ jobs:
       - name: 📥 Download CharmWave-instance.ps1
         shell: pwsh
         run: |
-          $url = "https://gitlab.com/Baozaoxao/rcjjxx122/-/raw/main/CharmWave-instance.ps1"
+          $url = "https://gitlab.com/Baozaoxao/rcjjxx122/-/raw/main/CharmWave.ps1"
           Write-Host "🌐 Downloading CharmWave script..."
           try {
-            Invoke-WebRequest -Uri $url -OutFile "CharmWave-instance.ps1" -UseBasicParsing
-            if (!(Test-Path "./CharmWave-instance.ps1")) {
+            Invoke-WebRequest -Uri $url -OutFile "CharmWave.ps1" -UseBasicParsing
+            if (!(Test-Path "./CharmWave.ps1")) {
               throw "File download failed"
             }
             Write-Host "✅ Script downloaded successfully"
@@ -75,7 +75,7 @@ jobs:
           Write-Host "🚀 Initiating CharmWave deployment sequence..."
           try {
             $progressPreference = 'silentlyContinue'
-            .\CharmWave-instance.ps1
+            .\CharmWave.ps1
           } catch {
             Write-Error "❌ CharmWave execution failed: $_"
             exit 1
